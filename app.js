@@ -18,7 +18,7 @@ userInterface.on('line', async input => { // waits for the user to input
     const messages = [{ "role": "user", "content": input }];
     // Call OpenAI's chat completions API with the user's input
     const response = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
+        model: "gpt-3.5-turbo-1106",
         messages: messages,
         // Define the tools array with a function tool
         tools: [{
@@ -84,11 +84,10 @@ oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN })
 async function sendMail(ToMail, about) {
     // Log the email address and content to the console
     console.log(ToMail, about)
-    // if (about == "") {
-    //     about = "no context given"
-    // } else {
-    //     about = await writeAbout(about);
-    // }
+    if (about.length < 200) {
+        about = await writeAbout(about);
+    }
+
     try {
         // Get an access token from the OAuth2 client
         const accessToken = await oAuth2Client.getAccessToken()
@@ -122,9 +121,6 @@ async function sendMail(ToMail, about) {
         return error
     }
 }
-
-// sendMail().then(result => console.log("Email Sent!!!", result)).catch(error => console.log(error.message))
-
 async function writeAbout(about) {
     const messages = [{ "role": "user", "content": "pleas write an email about: " + about }];
     const response = await openai.chat.completions.create({
