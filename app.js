@@ -34,10 +34,10 @@ userInterface.on('line', async input => { // waits for the response and creates 
                         },
                         "about": {
                             "type": "string",
-                            "description": "the content of the email or what the emails about."
+                            "description": "the content of the email."
                         }
                     },
-                    "required": ["ToMail"]
+                    "required": ["ToMail", "about"]
                 },
             }
         }],
@@ -74,6 +74,8 @@ async function sendMail(ToMail, about) {
     console.log(ToMail, about)
     if (about == "") {
         about = "no context given"
+    } else {
+        about = await writeAbout(about);
     }
     try {
         const accessToken = await oAuth2Client.getAccessToken()
@@ -108,4 +110,15 @@ async function sendMail(ToMail, about) {
     }
 }
 
-    // sendMail().then(result => console.log("Email Sent!!!", result)).catch(error => console.log(error.message))
+// sendMail().then(result => console.log("Email Sent!!!", result)).catch(error => console.log(error.message))
+
+async function writeAbout(about) {
+    const messages = [{ "role": "user", "content": "pleas write an email about: " + about }];
+    const response = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: messages,
+    });
+    // console.log(response.choices[0].message.content);
+    return response.choices[0].message.content
+}
+
