@@ -4,15 +4,19 @@ import { google } from "googleapis"
 import { config } from "dotenv"
 config()
 import { OpenAI } from "openai";
-
+import readline from "readline";
 const openai = new OpenAI();
 
-function sendMailTest(appendString) {
-    console.log("Sending mail to " + appendString);
-}
+const userInterface = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+})
 
-async function main(appendString) {
-    const messages = [{ "role": "user", "content": "send an email to malcolmemcdonald@gmail.com" }];
+userInterface.prompt() // creates a user input prompt 
+
+userInterface.on('line', async input => { // waits for the response and creates a chat when it returns
+
+    const messages = [{ "role": "user", "content": input }];
     const response = await openai.chat.completions.create({
         model: "gpt-3.5-turbo",
         messages: messages,
@@ -27,6 +31,10 @@ async function main(appendString) {
                         "ToMail": {
                             "type": "string",
                             "description": "The Email your sending to",
+                        },
+                        "about": {
+                            "type": "string",
+                            "description": "the content of the email or what the emails about."
                         }
                     },
                     "required": ["ToMail"]
@@ -41,11 +49,12 @@ async function main(appendString) {
     if (wantsToUseFunction) {
         if (response.choices[0].message.tool_calls[0].function.name == "sendMail") {
             let argumentObj = JSON.parse(response.choices[0].message.tool_calls[0].function.arguments);
-            sendMail(argumentObj.ToMail)
+            sendMail(argumentObj.ToMail, argumentObj.about)
+            userInterface.close()
         }
     }
 }
-main("its about TIME!")
+)
 
 
 
@@ -61,7 +70,11 @@ const REDIRECT_URI = 'https://developers.google.com/oauthplayground'
 const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI)
 oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN })
 
-async function sendMail(ToMail) {
+async function sendMail(ToMail, about) {
+    console.log(ToMail, about)
+    if (about == "") {
+        about = "no context given"
+    }
     try {
         const accessToken = await oAuth2Client.getAccessToken()
 
@@ -81,7 +94,7 @@ async function sendMail(ToMail) {
             from: 'Malcolm McDonald <malcolm.e.mcdonald@gmail.com>',
             to: ToMail,
             subject: "Hello from gmail using api",
-            text: "Hello From ChatGPT's api",
+            text: about,
         }
 
 
