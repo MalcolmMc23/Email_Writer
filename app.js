@@ -55,11 +55,20 @@ userInterface.on('line', async input => { // waits for the user to input
             let argumentObj = JSON.parse(response.choices[0].message.tool_calls[0].function.arguments);
             // Call the sendMail function with the parsed arguments
             // Call the sendMail function with the parsed arguments
-            sendMail(argumentObj.ToMail, argumentObj.about)
+
+
+            const loader = loadingAnimation();
+
+
+            await sendMail(argumentObj.ToMail, argumentObj.about)
                 // If the email is sent successfully, log the result
                 .then(result => console.log("Email Sent!!!", result))
                 // If there is an error in sending the email, log the error message
                 .catch(error => console.log(error.message))
+
+
+            clearInterval(loader);
+            process.stdout.write("\rDone!   \n");
 
             // Close the user inputstream/ui after sending the mail
             userInterface.close()
@@ -68,6 +77,14 @@ userInterface.on('line', async input => { // waits for the user to input
 }
 )
 
+function loadingAnimation() {
+    const P = ["\\", "|", "/", "-"];
+    let x = 0;
+    return setInterval(() => {
+        process.stdout.write(`\rLoading ${P[x++]}`);
+        x &= 3;
+    }, 250);
+}
 
 // Define constants for OAuth2 client
 const CLIENT_ID = process.env.CLIENT_ID
