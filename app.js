@@ -77,7 +77,7 @@ userInterface.on('line', async input => { // waits for the user to input
 }
 )
 
-function loadingAnimation() {
+function loadingAnimation() { // loading animatoin in the terminal *this was all written by chatgpt*
     const P = ["\\", "|", "/", "-"];
     let x = 0;
     return setInterval(() => {
